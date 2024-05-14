@@ -31,8 +31,16 @@ func TestMain(m *testing.M) {
 }
 
 func cleanup() {
+	clearTransfersTable()
 	clearEntriesTable()
 	clearAccountsTable()
+}
+
+func clearTransfersTable() {
+	err := testQueries.DeleteTransfers(context.Background())
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func clearEntriesTable() {
