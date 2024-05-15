@@ -42,6 +42,8 @@ jobs:
 
     - name: Run migrations
       run: make migrateup
+      working-directory: backend
     
     - name: Test
-      run: cd backend && make test
+      run: make test
+      working-directory: backend
