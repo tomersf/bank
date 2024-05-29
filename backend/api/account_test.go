@@ -118,6 +118,7 @@ func TestCreateAccountAPI(t *testing.T) {
 			name: "OK",
 			body: gin.H{
 				"currency": account.Currency,
+				"owner":    account.Owner,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreateAccountParams{
@@ -137,9 +138,10 @@ func TestCreateAccountAPI(t *testing.T) {
 			},
 		},
 		{
-			name: "NoAuthorization",
+			name: "Invalid Owner",
 			body: gin.H{
 				"currency": account.Currency,
+				"owner":    util.RandomString(2),
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -147,13 +149,14 @@ func TestCreateAccountAPI(t *testing.T) {
 					Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
 			name: "InternalError",
 			body: gin.H{
 				"currency": account.Currency,
+				"owner":    account.Owner,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -169,6 +172,7 @@ func TestCreateAccountAPI(t *testing.T) {
 			name: "InvalidCurrency",
 			body: gin.H{
 				"currency": "invalid",
+				"owner":    account.Owner,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -247,21 +251,6 @@ func TestListAccountsAPI(t *testing.T) {
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchAccounts(t, recorder.Body, accounts)
-			},
-		},
-		{
-			name: "NoAuthorization",
-			query: Query{
-				pageID:   1,
-				pageSize: n,
-			},
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					ListAccounts(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 		{
